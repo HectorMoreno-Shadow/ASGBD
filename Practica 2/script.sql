@@ -96,3 +96,45 @@ VALUES
 				('Limpieza interna y cambio de pasta térmica', '45.00', '1'),
 				('Sustitución de conector de carga', '50.00', '3'),
 				('Ampliación de RAM y formateo', '80.00', '4');
+				
+-- CONSULTAS
+
+-- 1.
+
+SELECT nombre_art, precio
+FROM articulos
+ORDER BY precio ASC
+;
+
+-- 2
+
+SELECT * FROM fabricantes
+WHERE UPPER(pais) = 'estados unidos'
+;
+
+-- 3
+
+SELECT * FROM articulos
+WHERE precio >= 100
+AND precio <= 300
+;
+
+-- 4
+
+SELECT AVG(precio) FROM articulos
+;
+
+-- 5
+
+SELECT id_fabri, COUNT(*) FROM articulos
+GROUP BY id_fabri
+;
+-- 6
+
+SELECT id_tec, COUNT(*) FROM reparaciones
+GROUP BY id_tec
+HAVING COUNT(*) > 1
+;
+
+-- 7
+
