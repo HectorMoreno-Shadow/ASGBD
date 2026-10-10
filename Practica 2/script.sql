@@ -138,3 +138,25 @@ HAVING COUNT(*) > 1
 
 -- 7
 
+SELECT a.nombre_art, a.precio, f.pais, f.id_fabri
+  FROM articulos a, fabricantes f
+  WHERE a.id_fabri = f.id_fabri
+  AND UPPER(f.pais) = 'taiwán'
+;
+
+-- 8
+
+SELECT descripcion_averia, coste_reparacion
+FROM reparaciones
+WHERE coste_reparacion = (
+    SELECT MAX(coste_reparacion)
+    FROM reparaciones
+    )
+;
+
+-- 9
+
+SELECT nombre_tec, salario * 1.10 AS salario_con_subida
+FROM tecnicos;
+
+-- 10
