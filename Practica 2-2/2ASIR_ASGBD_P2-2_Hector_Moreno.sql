@@ -16,14 +16,34 @@ WHERE precio = (
 -- 2
 
 SELECT f.nombre_fabri
-FROM fabricantes f, articulos a
-WHERE id_fabri NOT IN (
-	SELECT id_fabri
-	FROM articulos
-	WHERE precio <= (
+FROM fabricantes f
+WHERE f.id_fabri NOT IN (
+	SELECT a.id_fabri
+	FROM articulos a
+	WHERE a.precio <= (
 		SELECT AVG(precio)
 		FROM articulos
-		)
+));
+
+-- 3
+
+SELECT descripcion_averia, coste_reparacion
+FROM reparaciones r1
+WHERE coste_reparacion > (
+	SELECT AVG(coste_reparacion)
+	FROM reparaciones r2
+	WHERE r1.id_tec = r2.id_tec
 )
 ;
+
+-- 4
+
+SELECT id_tec, especialidad
+FROM tecnicos
+WHERE 
+;
+
+SELECT SUM(coste_reparacion) AS suma_coste
+FROM reparaciones
+GROUP BY id_tec
 
