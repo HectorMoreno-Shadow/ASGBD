@@ -68,3 +68,62 @@ SELECT t.nombre_tec
 FROM tecnicos t, reparaciones r
 WHERE t.id_tec = r.id_tec
 WHERE r.coste_reparacion < 100.00
+
+-- 7 Muestra el nombre y el salario de los técnicos cuyo salario sea inferior a la media
+-- salarial de su propia especialidad.
+
+SELECT nombre_tec, salario
+FROM tecnicos t1
+WHERE salario < (
+	SELECT AVG(salario)
+	FROM tecnicos t2
+	WHERE t2.especialidad = t1.especialidad
+);
+
+-- 8 Muestra el nombre de los fabricantes cuyo país coincide con el país del fabricante
+-- que produce el artículo más caro de toda la tienda.
+	
+SELECT nombre_fabri
+FROM fabricantes f
+WHERE pais IN (
+	SELECT pais
+	FROM fabricantes
+	WHERE id_fabri IN (
+		SELECT id_fabri
+		FROM articulos
+		WHERE precio = (
+			SELECT MAX(precio)
+			FROM articulos
+		)
+	)
+);
+
+-- 9 Muestra el nombre y el precio del artículo más barato de entre todos los fabricantes
+-- que son originarios de 'Estados Unidos'.
+
+SELECT nombre_art, precio
+FROM articulos
+WHERE id_fabri IN (
+    SELECT id_fabri
+    FROM fabricantes
+    WHERE pais LIKE 'Estados Unidos'
+)
+AND precio = (
+    SELECT MIN(precio)
+    FROM articulos
+    WHERE id_fabri IN (
+        SELECT id_fabri
+        FROM fabricantes
+        WHERE pais LIKE 'Estados Unidos'
+    )
+);
+
+-- 10 Muestra el identificador del técnico (tecnico_id) que ha acumulado el mayor
+-- coste total en reparaciones.
+
+SELECT id_tec
+FROM tecnicos
+WHERE id_tec IN (
+	SELECT MAX(coste_reparacion)
+	FROM reparaciones
+);
