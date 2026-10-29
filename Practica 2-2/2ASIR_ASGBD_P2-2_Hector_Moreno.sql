@@ -127,3 +127,12 @@ WHERE id_tec IN (
 	SELECT MAX(coste_reparacion)
 	FROM reparaciones
 );
+
+-- Bateria de ejercicios 2
+
+-- 1
+
+SELECT a.nombre_art, f.nombre_fabri
+FROM articulos a
+INNER JOIN fabricantes f ON f.id_fabri = a.id_fabri
+WHERE a.precio > 100.00
