@@ -4,10 +4,10 @@
 
 -- 1 Muestra el nombre y el precio de aquellos artículos que sean, exactamente, el artículo más caro de su respectivo fabricante.
 
-SELECT nombre_art, precio -- Selecciona nombre_art y precio de la tabla ARTICULOS.
+SELECT nombre_art, precio -
 FROM articulos a
 WHERE precio = (
-	SELECT MAX(precio) -- Selecciona el máximo precio de cada farbricante
+	SELECT MAX(precio) 
 	FROM articulos b
 	WHERE a.id_fabri = b.id_fabri
 )
@@ -22,7 +22,7 @@ WHERE f.id_fabri NOT IN (
 	SELECT a.id_fabri
 	FROM articulos a
 	WHERE a.precio <= (
-		SELECT AVG(precio) -- Calcula la media de los precios de los articulos
+		SELECT AVG(precio) 
 		FROM articulos
 ));
 
@@ -130,9 +130,95 @@ WHERE id_tec IN (
 
 -- Bateria de ejercicios 2
 
--- 1
+-- 1 Muestra el nombre de cada artículo junto con el nombre de su fabricante, pero
+-- únicamente para aquellos artículos cuyo precio sea superior a 100.00 euros
 
 SELECT a.nombre_art, f.nombre_fabri
 FROM articulos a
 INNER JOIN fabricantes f ON f.id_fabri = a.id_fabri
 WHERE a.precio > 100.00
+
+-- 2 Muestra el nombre de todos los fabricantes de la base de datos y, al lado, el nombre
+-- de sus artículos. Asegúrate de que aparezcan los fabricantes que no tienen ningún
+-- artículo registrado.
+
+SELECT a.nombre_art, f.nombre_fabri
+FROM fabricantes f
+LEFT JOIN articulos a ON a.id_fabri = f.id_fabri
+
+-- También se puede hacer así:
+
+SELECT a.nombre_art, f.nombre_fabri
+FROM articulos a
+RIGHT JOIN fabricantes f ON f.id_fabri = a.id_fabri
+
+-- 3 Muestra el nombre del fabricante y la media de los precios de sus artículos, pero solo
+-- para aquellos fabricantes cuya media de precios supere los 150.00 euros.
+
+SELECT f.nombre_fabri, AVG(a.precio)
+FROM fabricantes f
+INNER JOIN articulos a ON a.id_fabri = f.id_fabri
+GROUP BY f.nombre_fabri
+HAVING (a.precio) > 150.00
+
+-- 4 Muestra la descripción de la avería, el coste de la reparación y el nombre del técnico
+-- que la ha llevado a cabo, ordenado por el coste de mayor a menor.
+
+SELECT t.nombre_tec, r.descripcion_averia, r.coste_reparacion
+FROM reparaciones r
+INNER JOIN tecnicos t ON t.id_tec = r.id_tec
+ORDER BY r.coste_reparacion DESC
+
+-- 5 Muestra el nombre de aquellos técnicos que no han realizado ninguna reparación,
+-- utilizando obligatoriamente un cruce externo de tablas.
+
+SELECT t.nombre_tec
+FROM tecnicos t
+LEFT JOIN reparaciones r ON r.id_tec = t.id_tec
+WHERE r.id_tec IS NULL
+
+-- 6 Muestra el nombre del técnico y la suma total del dinero recaudado con sus
+-- reparaciones, filtrando únicamente aquellos técnicos cuya recaudación total supere
+-- los 100.00 euros.
+
+SELECT t.nombre_tec, SUM(coste_reparacion)
+FROM tecnicos t
+LEFT JOIN reparaciones r ON r.id_tec = t.id_tec
+GROUP BY t.nombre_tec
+HAVING SUM(coste_reparacion) > 100.00
+
+-- 7 Muestra el nombre de los artículos y el nombre de su respectivo fabricante, pero
+-- filtrando exclusivamente aquellos artículos cuyos fabricantes sean originarios de
+-- 'Estados Unidos' o 'Taiwán' .
+
+SELECT a.nombre_art, f.nombre_fabri
+FROM articulos a
+INNER JOIN fabricantes f ON f.id_fabri = a.id_fabri
+WHERE UPPER(f.pais) = 'Estados unidos' OR UPPER(f.pais) = 'Taiwán' 
+
+-- 8 Muestra el nombre de todos los técnicos y, al lado, el número total de reparaciones
+-- que ha realizado cada uno de ellos.
+
+SELECT t. nombre_tec, COUNT(id_repac)
+FROM tecnicos t
+LEFT JOIN reparaciones r ON r.id_tec = t.id_tec
+GROUP BY t.nombre_tec
+
+-- 9 Muestra el nombre del fabricante y el número total de artículos que produce, pero
+-- solo de aquellos fabricantes que tengan un número de artículos mayor o igual a 2.
+
+SELECT f.nombre_fabri, COUNT(a.id_art)
+FROM fabricantes f
+LEFT JOIN articulos a ON a.id_fabri = f.id_fabri
+GROUP BY f.nombre_fabri
+HAVING COUNT(a.id_art) >= 2
+
+-- 10 Muestra el nombre del técnico, su especialidad y la descripción de la reparación más
+-- costosa que ha realizado cada uno de ellos.
+
+SELECT t.nombre_tec, t.especialidad, r.descripcion_averia
+FROM tecnicos t
+LEFT JOIN reparaciones r ON r.id_tec = t.id_tec
+GROUP BY t.nombre_tec
+
+-- Ejercicio 10 bateria 2 incompleto
