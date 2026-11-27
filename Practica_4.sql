@@ -193,3 +193,85 @@ BEGIN
     SET porcentaje = (juegos_2022 / total_juegos) * 100;
 END //
 DELIMITER ;
+
+-- Ejercicio 6. Crear un procedimiento que tenga dos parámetros de entrada y uno de salida. Los dos de entrada
+-- serán dos cadenas de caracteres y el de salida será una cadena formada por las dos cadenas de entrada
+-- concatenadas.
+
+DELIMITER //
+CREATE PROCEDURE ej6(IN cad1 VARCHAR(255), IN cad2 VARCHAR(255), OUT res VARCHAR(510))
+BEGIN
+    SET res = CONCAT(cad1, cad2);
+END //
+DELIMITER ;
+
+--Ejercicio 7. Crear un procedimiento que tenga de parámetro el nombre de un género y retorne en una
+--parámetro de salida el número de juegos que existen de ese género.
+
+DELIMITER //
+CREATE PROCEDURE ej7(IN nom_genero VARCHAR(50), OUT total INT)
+BEGIN
+    SELECT COUNT(*) INTO total
+    FROM juego j
+    JOIN genero g ON j.id_genero = g.id_genero
+    WHERE g.nombre_genero = nom_genero;
+END //
+DELIMITER ;
+
+-- Ejercicio 8. Crear un procedimiento que reciba como parámetro el nombre de un juego y retorne en ese
+-- mismo parámetro el nombre del juego concatenado con el nombre del género al que corresponde.
+
+DELIMITER //
+CREATE PROCEDURE ej8(INOUT juego_genero VARCHAR(300))
+BEGIN
+    DECLARE nom_genero VARCHAR(50);
+
+    SELECT g.nombre_genero INTO nom_genero
+    FROM juego j
+    JOIN genero g ON j.id_genero = g.id_genero
+    WHERE j.nombre_juego = juego_genero;
+
+    SET juego_genero = CONCAT(juego_genero, ' - ', nom_genero);
+END //
+DELIMITER ;
+
+--Ejercicio 9. Crear un procedimiento que reciba como parámetros el nombre de una plataforma, un año de
+-- inicio y un año de fin y retorne el número de juegos que se publicaron para esa plataforma y entre el año de
+-- inicio y el año de fin
+
+DELIMITER //
+CREATE PROCEDURE ej9(IN nom_plat VARCHAR(50), IN anio_ini INT, IN anio_fin INT, OUT total INT)
+BEGIN
+    SELECT COUNT(DISTINCT dj.id_juego) INTO total
+    FROM plataforma_juego pj
+    JOIN plataforma p ON pj.id_plataforma = p.id_plataforma
+    JOIN desarrollador_juego dj ON pj.id_desarrollador_juego = dj.id_des_juego
+    WHERE p.nombre_plataforma = nom_plat
+      AND pj.anio_lanzamiento BETWEEN anio_ini AND anio_fin;
+END //
+DELIMITER ;
+
+-- Ejercicio 10. Crear un procedimiento que tenga de parámetro el nombre de un desarrollador y que devuelva el
+-- número de juegos que han creado.
+
+DELIMITER //
+CREATE PROCEDURE ej10(IN nom_dev VARCHAR(100), OUT total INT)
+BEGIN
+    SELECT COUNT(*) INTO total
+    FROM desarrollador d
+    JOIN desarrollador_juego dj ON d.id_desarrollador = dj.id_desarrollador
+    WHERE d.nombre_desarrollador = nom_dev;
+END //
+DELIMITER ;
+
+-- Ejercicio 11. Crear un procedimiento que tenga dos parámetros de entrada, uno será el identificador de un
+-- desarrollador y el otro el nuevo nombre que se le debe asignar en la base de datos a ese desarrollador.
+
+DELIMITER //
+CREATE PROCEDURE ej11(IN id_dev INT, IN nuevo_nombre VARCHAR(100))
+BEGIN
+    UPDATE desarrollador
+    SET nombre_desarrollador = nuevo_nombre
+    WHERE id_desarrollador = id_dev;
+END //
+DELIMITER ;
