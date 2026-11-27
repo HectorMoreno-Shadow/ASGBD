@@ -590,3 +590,5 @@ BEGIN
     JOIN genero g ON j.id_genero = g.id_genero;
 END //
 DELIMITER ;
+
+-- Enlace github: https://github.com/HectorMoreno-Shadow/ASGBD
