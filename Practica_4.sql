@@ -275,3 +275,79 @@ BEGIN
     WHERE id_desarrollador = id_dev;
 END //
 DELIMITER ;
+
+-- Ejercicio 12. Realiza un procedimiento que tenga un parámetro de entrada y otro de salida. El parámetro de
+-- entrada será un número de 1 a 12. Y el de salida será una cadena que indique el trimestre al que pertenece el
+-- mes correspondiente de ese número. Ejemplo: Si el número es 1, la salida será: ‘Primer trimestre’. 
+
+DELIMITER //
+CREATE PROCEDURE ej12(IN mes INT, OUT trimestre VARCHAR(30))
+BEGIN
+    CASE mes
+        WHEN 1 THEN SET trimestre = 'Primer trimestre';
+        WHEN 2 THEN SET trimestre = 'Primer trimestre';
+        WHEN 3 THEN SET trimestre = 'Primer trimestre';
+        WHEN 4 THEN SET trimestre = 'Segundo trimestre';
+        WHEN 5 THEN SET trimestre = 'Segundo trimestre';
+        WHEN 6 THEN SET trimestre = 'Segundo trimestre';
+        WHEN 7 THEN SET trimestre = 'Tercer trimestre';
+        WHEN 8 THEN SET trimestre = 'Tercer trimestre';
+        WHEN 9 THEN SET trimestre = 'Tercer trimestre';
+        WHEN 10 THEN SET trimestre = 'Cuarto trimestre';
+        WHEN 11 THEN SET trimestre = 'Cuarto trimestre';
+        WHEN 12 THEN SET trimestre = 'Cuarto trimestre';
+    END CASE;
+END //
+DELIMITER ;
+-- Ejercicio 13. Crear un procedimiento que tenga dos parámetros de entrada y uno de salida. Uno de los
+-- parámetros de entrada será el nombre de un desarrollador y el otro el nombre de una plataforma. El
+-- parámetro de salida debe contener un texto que indique el número de juegos realizados por dicho
+-- desarrollador para esa plataforma. Si no hay ninguno, debe devolver ‘No ha desarrollado ninguno’.
+
+DELIMITER //
+CREATE PROCEDURE ej13(IN nom_dev VARCHAR(100), IN nom_plat VARCHAR(50), OUT salida VARCHAR(150))
+BEGIN
+    DECLARE total INT;
+
+    SELECT COUNT(*) INTO total
+    FROM desarrollador d
+    JOIN desarrollador_juego dj ON d.id_desarrollador = dj.id_desarrollador
+    JOIN plataforma_juego pj ON dj.id_des_juego = pj.id_desarrollador_juego
+    JOIN plataforma p ON pj.id_plataforma = p.id_plataforma
+    WHERE d.nombre_desarrollador = nom_dev
+      AND p.nombre_plataforma = nom_plat;
+
+    IF total = 0 THEN
+        SET salida = 'No ha desarrollado ninguno';
+    ELSE
+        SET salida = CONCAT('Juegos desarrollados: ', total);
+    END IF;
+END //
+DELIMITER ;
+
+-- Ejercicio 14. Crea un procedimiento que tenga como parámetro de entrada el nombre de un juego y devuelva
+-- en un parámetro de salida la edad recomendada del juego en función del género. Si el género es ‘Estrategia’, la
+-- edad recomendada será 7; para ‘MOBA’ será 13; para ‘ARPG’, 16 y para ‘Mundo abierto’, 18. Realiza el
+-- procedimiento de dos formas, con IF y con SWITCH.
+
+DELIMITER //
+CREATE PROCEDURE ej14_if(IN nom_juego VARCHAR(200), OUT edad INT)
+BEGIN
+    DECLARE gen VARCHAR(50);
+
+    SELECT g.nombre_genero INTO gen
+    FROM juego j
+    JOIN genero g ON j.id_genero = g.id_genero
+    WHERE j.nombre_juego = nom_juego;
+
+    IF gen = 'Estrategia' THEN
+        SET edad = 7;
+    ELSEIF gen = 'MOBA' THEN
+        SET edad = 13;
+    ELSEIF gen = 'ARPG' THEN
+        SET edad = 16;
+    ELSEIF gen = 'Mundo abierto' THEN
+        SET edad = 18;
+    END IF;
+END //
+DELIMITER ;
