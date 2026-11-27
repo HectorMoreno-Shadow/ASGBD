@@ -351,3 +351,242 @@ BEGIN
     END IF;
 END //
 DELIMITER ;
+
+-- Ejercicio 15. Crea un procedimiento que reciba por parámetro el nombre de una plataforma y un año y
+-- devuelva el número de juegos que se han desarrollado para esa plataforma hasta ese año. Si no hay ninguno,
+-- devolver ‘No hay juegos para la plataforma X antes del año Y’.
+
+DELIMITER //
+CREATE PROCEDURE ej15(IN nom_plat VARCHAR(50), IN anio INT, OUT salida VARCHAR(200))
+BEGIN
+    DECLARE total INT;
+
+    SELECT COUNT(DISTINCT dj.id_juego) INTO total
+    FROM plataforma_juego pj
+    JOIN plataforma p ON pj.id_plataforma = p.id_plataforma
+    JOIN desarrollador_juego dj ON pj.id_desarrollador_juego = dj.id_des_juego
+    WHERE p.nombre_plataforma = nom_plat
+      AND pj.anio_lanzamiento <= anio;
+
+    IF total = 0 THEN
+        SET salida = CONCAT('No hay juegos para la plataforma ', nom_plat, ' antes del año ', anio);
+    ELSE
+        SET salida = total;
+    END IF;
+END //
+DELIMITER ;
+
+-- Ejercicio 16. Crea un procedimiento que reciba por parámetro el nombre de un juego y devuelva en un
+-- parámetro de salida un mensaje en función del número de plataformas en las que se ha publicado. Si es en 1 o
+-- menos mostrar ‘Pocas’, si es en 2 ‘Algunas’ y si es en 3 o más ‘Muchas’. Realiza el procedimiento de dos formas,
+-- con IF y con SWITCH.
+
+DELIMITER //
+CREATE PROCEDURE ej16_if(IN nom_juego VARCHAR(200), OUT msg VARCHAR(20))
+BEGIN
+    DECLARE num_plat INT;
+
+    SELECT COUNT(*) INTO num_plat
+    FROM juego j
+    JOIN desarrollador_juego dj ON j.id_juego = dj.id_juego
+    JOIN plataforma_juego pj ON dj.id_des_juego = pj.id_desarrollador_juego
+    WHERE j.nombre_juego = nom_juego;
+
+    IF num_plat <= 1 THEN
+        SET msg = 'Pocas';
+    ELSEIF num_plat = 2 THEN
+        SET msg = 'Algunas';
+    ELSE
+        SET msg = 'Muchas';
+    END IF;
+END //
+DELIMITER ;
+
+-- Ejercicio 17. Añade a la tabla juego el campo ‘edad_recomendada’ de tipo INT. Crea un procedimiento que
+-- tenga como parámetro de entrada el nombre de un juego. Dicho procedimiento debe actualizar el valor de
+-- edad_recomendada según el género del juego introducido: si el género es ‘Estrategia’, la edad recomendada
+-- será 7; para ‘MOBA’ será 13; para ‘ARPG’, 16 y para ‘Mundo abierto’, 18.
+
+ALTER TABLE juego ADD COLUMN edad_recomendada INT;
+
+DELIMITER //
+CREATE PROCEDURE ej17(IN nom_juego VARCHAR(200))
+BEGIN
+    DECLARE gen VARCHAR(50);
+    DECLARE edad INT;
+
+    SELECT g.nombre_genero INTO gen
+    FROM juego j
+    JOIN genero g ON j.id_genero = g.id_genero
+    WHERE j.nombre_juego = nom_juego;
+
+    CASE gen
+        WHEN 'Estrategia' THEN SET edad = 7;
+        WHEN 'MOBA' THEN SET edad = 13;
+        WHEN 'ARPG' THEN SET edad = 16;
+        WHEN 'Mundo abierto' THEN SET edad = 18;
+    END CASE;
+
+    UPDATE juego SET edad_recomendada = edad WHERE nombre_juego = nom_juego;
+END //
+DELIMITER ;
+
+--Ejercicio 18. Crea un procedimiento que muestre el nombre de todos los videojuegos junto con su edad
+--recomendada y un mensaje textual que indique ‘Adultos’ si el juego es para mayores de 18 u ‘Otros’ en caso
+--contrario. Ejemplo de salida:
+
+DELIMITER //
+CREATE PROCEDURE ej18()
+BEGIN
+    SELECT
+        nombre_juego,
+        edad_recomendada,
+        IF(edad_recomendada >= 18, 'Adultos', 'Otros') AS tipo
+    FROM juego;
+END //
+DELIMITER ;
+
+-- Ejercicio 19. Realiza un procedimiento que muestre el nombre de los juegos, su desarrollador, la plataforma
+-- para la que se ha lanzado y un mensaje textual que indique ‘Antiguo’ si se lanzó en 2015 o antes, ‘Moderno’ si se
+-- lanzó entre 2016 y 2020 o ‘Nuevo’ si se lanzó a partir de 2021 (incluido). Ejemplo de salida:
+
+DELIMITER //
+CREATE PROCEDURE ej19()
+BEGIN
+    SELECT
+        j.nombre_juego,
+        d.nombre_desarrollador,
+        p.nombre_plataforma,
+        CASE
+            WHEN pj.anio_lanzamiento <= 2015 THEN 'Antiguo'
+            WHEN pj.anio_lanzamiento BETWEEN 2016 AND 2020 THEN 'Moderno'
+            ELSE 'Nuevo'
+        END AS epoca
+    FROM plataforma_juego pj
+    JOIN desarrollador_juego dj ON pj.id_desarrollador_juego = dj.id_des_juego
+    JOIN juego j ON dj.id_juego = j.id_juego
+    JOIN desarrollador d ON dj.id_desarrollador = d.id_desarrollador
+    JOIN plataforma p ON pj.id_plataforma = p.id_plataforma;
+END //
+DELIMITER ;
+
+--Ejercicio 20. Crea un procedimiento que reciba dos parámetros de entrada y uno de salida. Los parámetro de
+--entrada serán el nombre de un desarrollador y el nombre de un género. El parámetro de salida debe devolver
+--una cadena de texto que indique ‘El desarrollador X ha creado ‘num_juegos’ juegos del género Y’ o ‘El
+--desarrollador X no ha desarrollado ningún juego del género Y’
+
+DELIMITER //
+CREATE PROCEDURE ej20(IN nom_dev VARCHAR(100), IN nom_gen VARCHAR(50), OUT salida VARCHAR(255))
+BEGIN
+    DECLARE num_juegos INT;
+
+    SELECT COUNT(*) INTO num_juegos
+    FROM desarrollador d
+    JOIN desarrollador_juego dj ON d.id_desarrollador = dj.id_desarrollador
+    JOIN juego j ON dj.id_juego = j.id_juego
+    JOIN genero g ON j.id_genero = g.id_genero
+    WHERE d.nombre_desarrollador = nom_dev
+      AND g.nombre_genero = nom_gen;
+
+    IF num_juegos = 0 THEN
+        SET salida = CONCAT('El desarrollador ', nom_dev, ' no ha desarrollado ningún juego del género ', nom_gen);
+    ELSE
+        SET salida = CONCAT('El desarrollador ', nom_dev, ' ha creado ', num_juegos, ' juegos del género ', nom_gen);
+    END IF;
+END //
+DELIMITER ;
+
+--Ejercicio 21. Crea un procedimiento muestre el nombre de todos los juegos y la edad recomendada. Si algún
+--juego no tiene informado el campo edad recomendada, debe indicar el valor 99.
+
+DELIMITER //
+CREATE PROCEDURE ej21()
+BEGIN
+    SELECT nombre_juego, IFNULL(edad_recomendada, 99) AS edad_recomendada
+    FROM juego;
+END //
+DELIMITER ;
+
+--Ejercicio 22. Crea un procedimiento que tenga como parámetro de entrada el nombre de un juego. Dicho
+--procedimiento debe actualizar el valor de edad_recomendada según el género del juego introducido: si el
+--género es ‘Estrategia’, la edad recomendada será 7; para ‘MOBA’ será 13; para ‘ARPG’, 16 y para ‘Mundo abierto’,
+--18. Haz uso de la sentencia CASE dentro del UPDATE.
+
+DELIMITER //
+CREATE PROCEDURE ej22(IN nom_juego VARCHAR(200))
+BEGIN
+    UPDATE juego j
+    JOIN genero g ON j.id_genero = g.id_genero
+    SET j.edad_recomendada = CASE g.nombre_genero
+        WHEN 'Estrategia' THEN 7
+        WHEN 'MOBA' THEN 13
+        WHEN 'ARPG' THEN 16
+        WHEN 'Mundo abierto' THEN 18
+    END
+    WHERE j.nombre_juego = nom_juego;
+END //
+DELIMITER ;
+
+--Ejercicio 23. Crea un procedimiento reciba por el nombre de un juego y una edad recomendada. Si el juego
+--indicado no tiene informado el campo edad_recomendada, debe actualizarse esa tupla para establecer la
+--edad indicada por parámetro.
+
+DELIMITER //
+CREATE PROCEDURE ej23(IN nom_juego VARCHAR(200), IN edad INT)
+BEGIN
+    UPDATE juego
+    SET edad_recomendada = edad
+    WHERE nombre_juego = nom_juego
+      AND edad_recomendada IS NULL;
+END //
+DELIMITER ;
+DELIMITER ;
+
+--Ejercicio 22. Crea un procedimiento que tenga como parámetro de entrada el nombre de un juego. Dicho
+--procedimiento debe actualizar el valor de edad_recomendada según el género del juego introducido: si el
+--género es ‘Estrategia’, la edad recomendada será 7; para ‘MOBA’ será 13; para ‘ARPG’, 16 y para ‘Mundo abierto’,
+--18. Haz uso de la sentencia CASE dentro del UPDATE.
+
+DELIMITER //
+CREATE PROCEDURE ej22(IN nom_juego VARCHAR(200))
+BEGIN
+    UPDATE juego j
+    JOIN genero g ON j.id_genero = g.id_genero
+    SET j.edad_recomendada = CASE g.nombre_genero
+        WHEN 'Estrategia' THEN 7
+        WHEN 'MOBA' THEN 13
+        WHEN 'ARPG' THEN 16
+        WHEN 'Mundo abierto' THEN 18
+    END
+    WHERE j.nombre_juego = nom_juego;
+END //
+DELIMITER ;
+
+--Ejercicio 23. Crea un procedimiento reciba por el nombre de un juego y una edad recomendada. Si el juego
+--indicado no tiene informado el campo edad_recomendada, debe actualizarse esa tupla para establecer la
+--edad indicada por parámetro.
+
+DELIMITER //
+CREATE PROCEDURE ej23(IN nom_juego VARCHAR(200), IN edad INT)
+BEGIN
+    UPDATE juego
+    SET edad_recomendada = edad
+    WHERE nombre_juego = nom_juego
+      AND edad_recomendada IS NULL;
+END //
+DELIMITER ;
+
+-- Ejercicio 24. Crea un procedimiento que reciba por parámetro el nombre de un género. Dicho procedimiento
+-- debe mostrar el nombre de todos los juegos y su género. En caso de que el género sea igual al introducido por
+-- parámetro, se mostrará NULL.
+
+DELIMITER //
+CREATE PROCEDURE ej24(IN nom_gen VARCHAR(50))
+BEGIN
+    SELECT
+        j.nombre_juego,
+        IF(g.nombre_genero = nom_gen, NULL, g.nombre_genero) AS nombre_genero
+    FROM juego j
+    JOIN genero g ON j.id_genero = g.id_genero;
+END //
+DELIMITER ;
