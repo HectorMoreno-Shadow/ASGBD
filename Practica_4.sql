@@ -181,4 +181,15 @@ END$
 --hecho que cada juego solo se lanza una vez, independientemente de que se lance en tres plataformas
 --diferentes)
 
--- Ni idea
+DELIMITER //
+CREATE PROCEDURE ej5(OUT porcentaje DECIMAL(5,2))
+BEGIN
+    DECLARE juegos_2022 INT;
+    DECLARE total_juegos INT;
+
+    CALL ej4(juegos_2022);
+    SELECT COUNT(*) INTO total_juegos FROM juego;
+
+    SET porcentaje = (juegos_2022 / total_juegos) * 100;
+END //
+DELIMITER ;
