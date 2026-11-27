@@ -1,3 +1,5 @@
+-- Héctor Moreno Tejero
+
 -- Bases de datos VIDEOJUEGOS
 
 CREATE DATABASE IF NOT EXISTS VIDEOJUEGOS;
